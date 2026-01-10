@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, model, type InferSchemaType, type Model } from 'mongoose';
 
 const OrganizerSchema = new Schema(
     {
@@ -12,6 +12,9 @@ const OrganizerSchema = new Schema(
     { timestamps: true }
 );
 
-const Organizer = mongoose.models.Organizer || mongoose.model('Organizer', OrganizerSchema);
+export type OrganizerDocument = InferSchemaType<typeof OrganizerSchema>;
+
+// Reuse existing model when possible (helps during hot reload).
+const Organizer = (mongoose.models.Organizer as Model<OrganizerDocument>) || model<OrganizerDocument>('Organizer', OrganizerSchema);
 
 export default Organizer;

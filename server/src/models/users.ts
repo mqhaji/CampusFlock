@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, model, type InferSchemaType, type Model } from 'mongoose';
 
 const UserSchema = new Schema(
   {
@@ -12,6 +12,9 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
+export type UserDocument = InferSchemaType<typeof UserSchema>;
+
+// Reuse existing model when possible (helps during hot reload).
+const User = (mongoose.models.User as Model<UserDocument>) || model<UserDocument>('User', UserSchema);
 
 export default User;

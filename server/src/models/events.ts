@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, model, type InferSchemaType, type Model } from 'mongoose';
 
 const EventSchema = new Schema(
     {
@@ -18,6 +18,9 @@ const EventSchema = new Schema(
     { timestamps: true }
 );
 
-const Event = mongoose.models.Event || mongoose.model('Event', EventSchema);
+export type EventDocument = InferSchemaType<typeof EventSchema>;
+
+// Reuse existing model when possible (helps during hot reload).
+const Event = (mongoose.models.Event as Model<EventDocument>) || model<EventDocument>('Event', EventSchema);
 
 export default Event;
