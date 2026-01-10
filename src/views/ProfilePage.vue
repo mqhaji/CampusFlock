@@ -3,6 +3,7 @@ import { useDisplay } from 'vuetify';
 import ProfileEditor from '../components/settings/ProfileEditor.vue';
 import { onBeforeMount, ref } from 'vue';
 import type { User } from '@/types/models';
+import { fetchUsers } from '@/api';
 
 const { smAndUp } = useDisplay();
 
@@ -10,8 +11,7 @@ const user = ref<User | null>(null);
 
 onBeforeMount(async () => {
     try {
-        const response = await fetch('http://localhost:3000/api/users')
-        const data = await response.json() as User[];
+        const data = await fetchUsers();
         // Temporary: use the first user until auth is implemented.
         user.value = data[0] ?? null;
     } catch (err) {

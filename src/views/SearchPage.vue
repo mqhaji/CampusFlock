@@ -24,7 +24,7 @@
         <v-card-text>{{ currentEvent?.details || currentEvent?.description }}</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="red darken-1" text @click="closeDialog">
+          <v-btn color="red darken-1" variant="text" @click="closeDialog">
             Close
           </v-btn>
         </v-card-actions>
@@ -38,6 +38,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import EventCard from '@/components/EventCard.vue';
 import type { Event } from '@/types/models';
+import { fetchEvents } from '@/api';
 
 const route = useRoute();
 const dialog = ref(false);
@@ -54,7 +55,7 @@ const filteredEvents = computed(() => {
     event.title?.toLowerCase().includes(searchQuery) ||
     event.description?.toLowerCase().includes(searchQuery) ||
     event.details?.toLowerCase().includes(searchQuery) ||
-    event.organizer?.name?.toLowerCase().includes(searchQuery)
+    getOrganizerName(event.organizer, event.organizerName).toLowerCase().includes(searchQuery)
   );
 });
 
@@ -69,10 +70,17 @@ function formatDate(isoString: string | Date | undefined, options: { dateOnly?: 
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+function getOrganizerName(organizer?: Event['organizer'], fallback?: string) {
+  if (organizer && typeof organizer !== 'string') {
+    return organizer.name;
+  }
+  return fallback || 'Unknown Organizer';
+}
+
 function openDialog(event: Event) {
   currentEvent.value = {
     ...event,
-    organizerName: event.organizer?.name || event.organizerName || 'Unknown Organizer',
+    organizerName: getOrganizerName(event.organizer, event.organizerName),
   };
   dialog.value = true;
 }
@@ -83,11 +91,10 @@ function closeDialog() {
 
 onMounted(async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/events');
-    const data = await response.json() as Event[];
+    const data = await fetchEvents();
     events.value = data.map(event => ({
       ...event,
-      organizerName: event.organizer?.name || 'Unknown Organizer',
+      organizerName: getOrganizerName(event.organizer, event.organizerName),
     }));
   } catch (err) {
     console.log('Error when fetching events:', err);

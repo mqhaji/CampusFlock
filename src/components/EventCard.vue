@@ -6,11 +6,11 @@
           {{ formatDate(event.startAt, { dateOnly: true }) }} | 
           {{ formatDate(event.startAt) }} - {{ formatDate(event.endAt) }}
           <br>
-          Organized by: {{ event.organizer?.name || event.organizerName || 'Unknown Organizer' }}
+          Organized by: {{ organizerName }}
         </v-card-subtitle>
         <v-card-text class="card-text">{{ event.description }}</v-card-text>
         <v-card-actions>
-          <v-btn color="blue darken-1" text @click="emitOpen">
+          <v-btn color="blue darken-1" variant="text" @click="emitOpen">
             Learn More
           </v-btn>
         </v-card-actions>
@@ -19,7 +19,7 @@
   </template>
   
   <script setup lang="ts">
-  import { defineProps, defineEmits } from 'vue';
+  import { computed } from 'vue';
   import type { Event } from '@/types/models';
   
   const props = defineProps<{
@@ -41,6 +41,14 @@
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
   
+  const organizerName = computed(() => {
+    const organizer = props.event.organizer;
+    if (organizer && typeof organizer !== 'string') {
+      return organizer.name;
+    }
+    return props.event.organizerName || 'Unknown Organizer';
+  });
+
   function emitOpen() {
     emit('open', props.event);
   }

@@ -24,7 +24,7 @@
         <v-card-text>{{ currentEvent?.details || currentEvent?.description }}</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="red darken-1" text @click="closeDialog">
+          <v-btn color="red darken-1" variant="text" @click="closeDialog">
             Close
           </v-btn>
         </v-card-actions>
@@ -36,7 +36,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import EventCard from '@/components/EventCard.vue';
-import type { Event } from '@/types/models';
+import type { Event, Organizer } from '@/types/models';
+import { fetchEvents } from '@/api';
 
 const sortedEvents = ref<Event[]>([]);
 const dialog = ref(false);
@@ -53,10 +54,21 @@ function formatDate(isoString: string | Date | undefined, options: { dateOnly?: 
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+function getOrganizerName(organizer?: Event['organizer'], fallback?: string) {
+  if (organizer && typeof organizer !== 'string') {
+    return organizer.name;
+  }
+  return fallback || 'Unknown Organizer';
+}
+
+function toDate(value: string | Date | undefined) {
+  return value instanceof Date ? value : new Date(value ?? '');
+}
+
 function openDialog(event: Event) {
   currentEvent.value = {
     ...event,
-    organizerName: event.organizer?.name || event.organizerName || 'Unknown Organizer',
+    organizerName: getOrganizerName(event.organizer, event.organizerName),
   };
   dialog.value = true;
 }
@@ -67,14 +79,13 @@ function closeDialog() {
 
 onMounted(async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/events');
-    const data = await response.json() as Event[];
+    const data = await fetchEvents();
     sortedEvents.value = data
       .map(event => ({
         ...event,
-        organizerName: event.organizer?.name || 'Unknown Organizer',
+        organizerName: getOrganizerName(event.organizer, event.organizerName),
       }))
-      .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+      .sort((a, b) => toDate(a.startAt).getTime() - toDate(b.startAt).getTime());
   } catch (err) {
     console.log('Error when fetching events:', err);
   }

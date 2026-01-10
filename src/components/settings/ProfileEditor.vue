@@ -2,6 +2,7 @@
 import { ref, onBeforeMount } from 'vue';
 import ProfilePicEditor from './ProfilePicEditor.vue';
 import type { User } from '@/types/models';
+import { fetchUsers } from '@/api';
 
 const name = ref<string>('');
 const bio = ref<string>('');
@@ -32,8 +33,7 @@ function removeChip(index: number) {
 
 onBeforeMount(async () => {
     try {
-        const response = await fetch('http://localhost:3000/api/users');
-        const data = await response.json() as User[];
+        const data = await fetchUsers();
         const user = data[0];
 
         name.value = user?.name ?? '';

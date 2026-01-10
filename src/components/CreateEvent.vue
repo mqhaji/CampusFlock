@@ -37,6 +37,11 @@ watch(dateString, (newVal) => {
 function close() {
     show.value = false;
 }
+
+function create() {
+    // TODO: wire up API call for event creation.
+    close();
+}
 </script>
 
 <template>
