@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay, useTheme } from 'vuetify';
 import CreateEvent from './components/CreateEvent.vue';
@@ -100,18 +100,47 @@ const drawer = ref(false);
 const activeTab = ref(route.path);
 const searchQuery = ref('');  // Store the search query input
 let searchTimer;
+let systemThemeMedia;
 
 watch(() => route.path, (newPath) => {
   activeTab.value = newPath;
 });
 const createEventDialog = ref(false)
 
-switch (localStorage['theme']) {
-  case 'light':
-  case 'dark':
-    theme.global.name.value = localStorage['theme'];
-    break;
+function applySystemTheme(isDark) {
+  theme.global.name.value = isDark ? 'dark' : 'light';
 }
+
+function handleSystemThemeChange(event) {
+  applySystemTheme(event.matches);
+}
+
+onMounted(() => {
+  if (typeof window === 'undefined' || !window.matchMedia) {
+    return;
+  }
+
+  systemThemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+  applySystemTheme(systemThemeMedia.matches);
+
+  if (systemThemeMedia.addEventListener) {
+    systemThemeMedia.addEventListener('change', handleSystemThemeChange);
+  } else if (systemThemeMedia.addListener) {
+    systemThemeMedia.addListener(handleSystemThemeChange);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (!systemThemeMedia) {
+    return;
+  }
+
+  if (systemThemeMedia.removeEventListener) {
+    systemThemeMedia.removeEventListener('change', handleSystemThemeChange);
+  } else if (systemThemeMedia.removeListener) {
+    systemThemeMedia.removeListener(handleSystemThemeChange);
+  }
+});
 
 function navigateTo(route) {
   // Check if the new route is different from the current one
@@ -168,7 +197,6 @@ watch(
 
 function handleSearch() {
   updateSearchRoute(searchQuery.value);
-  localStorage['theme'] = theme.global.name.value;
 }
 
 function clearSearch() {
@@ -182,7 +210,6 @@ function onCreateEventClick() {
 
 function toggleTheme() {
   theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark';
-  localStorage['theme'] = theme.global.name.value;
 }
 </script>
 
