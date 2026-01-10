@@ -46,6 +46,9 @@ npm run dev
 
 Note: the server dev script uses `tsx` to run TypeScript directly.
 
+Environment config:
+- `VITE_API_BASE` controls the frontend API base URL (see `.env.example`).
+
 Optional server checks and data load:
 ```bash
 cd server
