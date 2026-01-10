@@ -3,8 +3,8 @@ import { ref, onBeforeMount } from 'vue';
 import ProfilePicEditor from './ProfilePicEditor.vue';
 
 const name = ref<string>('');
-const description = ref<string>('');
-const interests = ref<string>('');
+const bio = ref<string>('');
+const interests = ref<string[]>([]);
 const profilePicDialog = ref<boolean>(false);
 
 const chipInput = ref<string>('')
@@ -18,13 +18,14 @@ function addChip() {
   const trimmedInput = chipInput.value.trim();
   if (trimmedInput && !chips.value.includes(trimmedInput)) {
     chips.value.push(trimmedInput);
-    interests.value = ''; // Clear the input field after adding
+    interests.value = [...chips.value];
   }
   chipInput.value = '';
 }
 
 function removeChip(index: number) {
   chips.value.splice(index, 1);
+  interests.value = [...chips.value];
 };
 
 onBeforeMount(async () => {
@@ -34,10 +35,9 @@ onBeforeMount(async () => {
         const user = data[0];
 
         name.value = user.name;
-        description.value = user.description;
-        interests.value = user.interests;
-
-        chips.value = interests.value?.split(/[;\n]+/) || [];
+        bio.value = user.bio || '';
+        interests.value = Array.isArray(user.interests) ? user.interests : [];
+        chips.value = [...interests.value];
     } catch (err) {
         console.log('Error when fetching user data:', err);
     }
@@ -66,7 +66,7 @@ onBeforeMount(async () => {
 
         <v-row>
             <v-col>
-                <v-textarea v-model="description" label="Describe yourself" hide-details="auto"></v-textarea>
+                <v-textarea v-model="bio" label="Describe yourself" hide-details="auto"></v-textarea>
             </v-col>
         </v-row>
 

@@ -15,13 +15,13 @@
       <v-card>
         <v-card-title class="text-h5">{{ currentEvent.title }}</v-card-title>
         <v-card-subtitle>
-          Date: {{ formatDate(currentEvent.startTime, { dateOnly: true }) }}
+          Date: {{ formatDate(currentEvent.startAt, { dateOnly: true }) }}
           <br>
-          Start: {{ formatDate(currentEvent.startTime) }} - End: {{ formatDate(currentEvent.endTime) }}
+          Start: {{ formatDate(currentEvent.startAt) }} - End: {{ formatDate(currentEvent.endAt) }}
           <br>
           Organized by: {{ currentEvent.organizerName }}
         </v-card-subtitle>
-        <v-card-text>{{ currentEvent.extendedDescription }}</v-card-text>
+        <v-card-text>{{ currentEvent.details || currentEvent.description }}</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="red darken-1" text @click="closeDialog">
@@ -35,15 +35,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import EventCard from '@/components/EventCard.vue';  // Adjust path if necessary
-import events from '@/data/events.json';
-import organizers from '@/data/organizers.json';
+import EventCard from '@/components/EventCard.vue';
 
 const sortedEvents = ref([]);
 const dialog = ref(false);
 const currentEvent = ref({});
 
 function formatDate(isoString, options = {}) {
+  if (!isoString) {
+    return '';
+  }
   const date = new Date(isoString);
   if (options.dateOnly) {
     return date.toLocaleDateString();
@@ -52,7 +53,10 @@ function formatDate(isoString, options = {}) {
 }
 
 function openDialog(event) {
-  currentEvent.value = {...event, organizerName: organizers[event.userID]?.username || 'Unknown Organizer'};
+  currentEvent.value = {
+    ...event,
+    organizerName: event.organizer?.name || event.organizerName || 'Unknown Organizer',
+  };
   dialog.value = true;
 }
 
@@ -60,11 +64,19 @@ function closeDialog() {
   dialog.value = false;
 }
 
-onMounted(() => {
-  sortedEvents.value = events.map(event => ({
-    ...event,
-    organizerName: organizers[event.userID]?.username || 'Unknown Organizer'
-  })).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/events');
+    const data = await response.json();
+    sortedEvents.value = data
+      .map(event => ({
+        ...event,
+        organizerName: event.organizer?.name || 'Unknown Organizer',
+      }))
+      .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+  } catch (err) {
+    console.log('Error when fetching events:', err);
+  }
 });
 </script>
 

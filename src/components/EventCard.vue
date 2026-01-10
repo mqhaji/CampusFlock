@@ -3,10 +3,10 @@
       <v-card class="event-card">
         <v-card-title>{{ event.title }}</v-card-title>
         <v-card-subtitle>
-          {{ formatDate(event.startTime, { dateOnly: true }) }} | 
-          {{ formatDate(event.startTime) }} - {{ formatDate(event.endTime) }}
+          {{ formatDate(event.startAt, { dateOnly: true }) }} | 
+          {{ formatDate(event.startAt) }} - {{ formatDate(event.endAt) }}
           <br>
-          Organized by: {{ event.organizerName }}
+          Organized by: {{ event.organizer?.name || event.organizerName || 'Unknown Organizer' }}
         </v-card-subtitle>
         <v-card-text class="card-text">{{ event.description }}</v-card-text>
         <v-card-actions>
@@ -28,6 +28,9 @@
   const emit = defineEmits(['open']);
   
   function formatDate(isoString, options = {}) {
+    if (!isoString) {
+      return '';
+    }
     const date = new Date(isoString);
     if (options.dateOnly) {
       return date.toLocaleDateString();

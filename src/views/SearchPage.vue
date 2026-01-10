@@ -15,13 +15,13 @@
       <v-card>
         <v-card-title class="text-h5">{{ currentEvent.title }}</v-card-title>
         <v-card-subtitle>
-          Date: {{ formatDate(currentEvent.startTime, { dateOnly: true }) }}
+          Date: {{ formatDate(currentEvent.startAt, { dateOnly: true }) }}
           <br>
-          Start: {{ formatDate(currentEvent.startTime) }} - End: {{ formatDate(currentEvent.endTime) }}
+          Start: {{ formatDate(currentEvent.startAt) }} - End: {{ formatDate(currentEvent.endAt) }}
           <br>
           Organized by: {{ currentEvent.organizerName }}
         </v-card-subtitle>
-        <v-card-text>{{ currentEvent.extendedDescription }}</v-card-text>
+        <v-card-text>{{ currentEvent.details || currentEvent.description }}</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="red darken-1" text @click="closeDialog">
@@ -34,29 +34,33 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import EventCard from '@/components/EventCard.vue'; // Adjust path if necessary
-import events from '@/data/events.json'; // Ensure path is correct
-import organizers from '@/data/organizers.json'; // Ensure path is correct
+import EventCard from '@/components/EventCard.vue';
 
 const route = useRoute();
 const dialog = ref(false);
 const currentEvent = ref({});
+const events = ref([]);
 
 const filteredEvents = computed(() => {
-  const searchQuery = route.query.query?.toLowerCase();
-  return events.filter(event =>
-    event.title.toLowerCase().includes(searchQuery) ||
-    event.userID.toLowerCase().includes(searchQuery) ||
-    event.description.toLowerCase().includes(searchQuery)
-  ).map(event => ({
-    ...event,
-    organizerName: organizers[event.userID]?.username || 'Unknown Organizer'
-  }));
+  const searchQuery = String(route.query.query || '').toLowerCase();
+  if (!searchQuery) {
+    return events.value;
+  }
+
+  return events.value.filter(event =>
+    event.title?.toLowerCase().includes(searchQuery) ||
+    event.description?.toLowerCase().includes(searchQuery) ||
+    event.details?.toLowerCase().includes(searchQuery) ||
+    event.organizer?.name?.toLowerCase().includes(searchQuery)
+  );
 });
 
 function formatDate(isoString, options = {}) {
+  if (!isoString) {
+    return '';
+  }
   const date = new Date(isoString);
   if (options.dateOnly) {
     return date.toLocaleDateString();
@@ -65,13 +69,29 @@ function formatDate(isoString, options = {}) {
 }
 
 function openDialog(event) {
-  currentEvent.value = {...event, organizerName: organizers[event.userID]?.username || 'Unknown Organizer', extendedDescription: event.extendedDescription || "No extended description available."};
+  currentEvent.value = {
+    ...event,
+    organizerName: event.organizer?.name || event.organizerName || 'Unknown Organizer',
+  };
   dialog.value = true;
 }
 
 function closeDialog() {
   dialog.value = false;
 }
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/events');
+    const data = await response.json();
+    events.value = data.map(event => ({
+      ...event,
+      organizerName: event.organizer?.name || 'Unknown Organizer',
+    }));
+  } catch (err) {
+    console.log('Error when fetching events:', err);
+  }
+});
 </script>
 
 <style scoped>

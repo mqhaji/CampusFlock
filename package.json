@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev --prefix server\"",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "5.1.2",
+    "concurrently": "^9.2.1",
     "vite": "5.4.1"
   }
 }
