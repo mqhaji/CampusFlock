@@ -20,6 +20,9 @@ Frontend:
 Backend:
 - MongoDB
 - Node.js
+- Express
+- Mongoose
+- TypeScript (server runtime via tsx)
 
 ## Running locally
 Install dependencies:
@@ -39,6 +42,18 @@ cd server && npm run dev
 ```
 ```bash
 npm run dev
+```
+
+Note: the server dev script uses `tsx` to run TypeScript directly.
+
+Optional server checks and data load:
+```bash
+cd server
+npm run typecheck
+```
+```bash
+cd server
+npm run migrate:fixtures -- --drop
 ```
 
 ## Current progress
