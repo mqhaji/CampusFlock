@@ -18,16 +18,19 @@
     </v-col>
   </template>
   
-  <script setup>
+  <script setup lang="ts">
   import { defineProps, defineEmits } from 'vue';
+  import type { Event } from '@/types/models';
   
-  const props = defineProps({
-    event: Object,
-  });
+  const props = defineProps<{
+    event: Event;
+  }>();
   
-  const emit = defineEmits(['open']);
+  const emit = defineEmits<{
+    (event: 'open', payload: Event): void;
+  }>();
   
-  function formatDate(isoString, options = {}) {
+  function formatDate(isoString: string | Date | undefined, options: { dateOnly?: boolean } = {}) {
     if (!isoString) {
       return '';
     }
