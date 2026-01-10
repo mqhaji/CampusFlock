@@ -7,6 +7,7 @@
     "start": "node dist/app.js",
     "dev": "ts-node src/app.js",
     "build": "tsc",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "migrate:fixtures": "node src/scripts/migrate-fixtures.js"
   },
   "dependencies": {
