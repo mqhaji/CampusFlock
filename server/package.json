@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node dist/app.js",
     "dev": "ts-node src/app.js",
-    "build": "tsc"
+    "build": "tsc",
+    "migrate:fixtures": "node src/scripts/migrate-fixtures.js"
   },
   "dependencies": {
     "cors": "2.8.5",

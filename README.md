@@ -21,6 +21,26 @@ Backend:
 - MongoDB
 - Node.js
 
+## Running locally
+Install dependencies:
+```bash
+npm install
+cd server && npm install
+```
+
+Run both frontend and backend together:
+```bash
+npm run dev:all
+```
+
+Or run them separately:
+```bash
+cd server && npm run dev
+```
+```bash
+npm run dev
+```
+
 ## Current progress
 - General page layout and design
 - Search functionality
