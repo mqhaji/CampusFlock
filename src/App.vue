@@ -43,9 +43,27 @@
         </v-col>
 
         <v-col cols="4" class="d-flex justify-center">
-          <v-text-field dense flat hide-details solo-inverted placeholder="Search..." append-icon="mdi-magnify"
-            v-model="searchQuery" @keyup.enter="handleSearch" @click:append="handleSearch"
-            class="search-bar d-flex-inline justify-self-center"></v-text-field>
+          <v-text-field dense flat hide-details solo-inverted placeholder="Search..."
+            v-model="searchQuery" @keyup.enter="handleSearch"
+            class="search-bar d-flex-inline justify-self-center">
+            <template #append-inner>
+              <v-btn
+                icon="mdi-magnify"
+                variant="text"
+                size="small"
+                aria-label="Search"
+                @click="handleSearch"
+              />
+              <v-btn
+                v-if="searchQuery"
+                icon="mdi-close"
+                variant="text"
+                size="small"
+                aria-label="Clear search"
+                @click="clearSearch"
+              />
+            </template>
+          </v-text-field>
         </v-col>
 
         <v-col cols="4" class="d-flex justify-end">
@@ -81,6 +99,7 @@ const theme = useTheme();
 const drawer = ref(false);
 const activeTab = ref(route.path);
 const searchQuery = ref('');  // Store the search query input
+let searchTimer;
 
 watch(() => route.path, (newPath) => {
   activeTab.value = newPath;
@@ -105,10 +124,56 @@ function navigateTo(route) {
   }
 }
 
+function updateSearchRoute(value, replace = false) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    if (route.path !== '/home') {
+      router.push('/home');
+    }
+    return;
+  }
+  const target = {
+    name: 'SearchPage',
+    query: trimmed ? { query: trimmed } : {},
+  };
+
+  if (route.name !== 'SearchPage') {
+    router.push(target);
+    return;
+  }
+
+  if (replace) {
+    router.replace(target);
+  } else {
+    router.push(target);
+  }
+}
+
+watch(searchQuery, (value) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    updateSearchRoute(value, true);
+  }, 200);
+});
+
+watch(
+  () => route.query.query,
+  (value) => {
+    const nextValue = typeof value === 'string' ? value : '';
+    if (nextValue !== searchQuery.value) {
+      searchQuery.value = nextValue;
+    }
+  }
+);
+
 function handleSearch() {
-  router.push({ name: 'SearchPage', query: { query: searchQuery.value } });
-  // searchQuery.value = ''; // Optionally clear the search field after search;
+  updateSearchRoute(searchQuery.value);
   localStorage['theme'] = theme.global.name.value;
+}
+
+function clearSearch() {
+  searchQuery.value = '';
+  updateSearchRoute('');
 }
 
 function onCreateEventClick() {
