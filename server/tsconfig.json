@@ -8,13 +8,12 @@
     // Keep build output consistent when we later compile TS to dist/.
     "rootDir": "src",
     "outDir": "dist",
-    // Allow JS files so typecheck can run before we convert to TS.
-    "allowJs": true,
-    "checkJs": false,
-    // Helpful defaults for newcomers.
+    // Tighter checks help catch mistakes early.
+    "noImplicitAny": true,
+    // Helpful defaults for newcomers (strict can be enabled later).
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.js"]
+  "include": ["src/**/*.ts"]
 }

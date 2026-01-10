@@ -1,4 +1,5 @@
 import { connect, disconnect } from 'mongoose';
+import type { Types } from 'mongoose';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,13 +15,40 @@ const dataDir = path.resolve(__dirname, '..', 'data');
 const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campusflock';
 const shouldDrop = process.argv.includes('--drop');
 
-async function readJson(fileName) {
+// Shapes of the JSON fixture files we import.
+type EventFixture = {
+  userId: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  description: string;
+  extendedDescription?: string;
+  image?: string | null;
+};
+
+type OrganizerFixture = {
+  userID?: string;
+  name: string;
+  email: string;
+  profilePic?: string | null;
+  description?: string;
+};
+
+type UserFixture = {
+  name: string;
+  email: string;
+  profilePic?: string | null;
+  description?: string;
+  interests?: string;
+};
+
+async function readJson<T>(fileName: string): Promise<T> {
   const filePath = path.join(dataDir, fileName);
   const raw = await fs.readFile(filePath, 'utf8');
   return JSON.parse(raw);
 }
 
-function splitInterests(value) {
+function splitInterests(value?: string): string[] {
   if (!value) return [];
   return value
     .split(/[;\n]+/)
@@ -38,12 +66,12 @@ async function migrate() {
   }
 
   const [eventsData, orgsData, usersData] = await Promise.all([
-    readJson('events.json'),
-    readJson('orgs.json'),
-    readJson('users.json'),
+    readJson<EventFixture[]>('events.json'),
+    readJson<OrganizerFixture[]>('orgs.json'),
+    readJson<UserFixture[]>('users.json'),
   ]);
 
-  const organizerIdByLegacyUserId = new Map();
+  const organizerIdByLegacyUserId = new Map<string, Types.ObjectId>();
 
   for (const org of orgsData) {
     const organizerData = {
@@ -96,7 +124,7 @@ async function migrate() {
       endAt: new Date(event.endTime),
       organizer: organizerId,
       imageUrl: event.image || undefined,
-      tags: [],
+      tags: [] as string[],
     };
 
     await Event.findOneAndUpdate(

@@ -1,4 +1,6 @@
 import express from 'express';
+// Explicit Request/Response types make handler signatures clearer for beginners.
+import type { Request, Response } from 'express';
 import { connect } from 'mongoose';
 import cors from 'cors';
 
@@ -11,30 +13,33 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/events', async (req, res) => {
+app.get('/api/events', async (req: Request, res: Response) => {
     try {
         const events = await Event.find().populate('organizer', 'name email profilePicUrl');
         res.json(events);
-    } catch (err) {
-        res.status(400).json({ message: err.message })
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        res.status(400).json({ message });
     }
 });
 
-app.get('/api/orgs', async (req, res) => {
+app.get('/api/orgs', async (req: Request, res: Response) => {
     try {
         const orgs = await Organizer.find();
         res.json(orgs);
-    } catch (err) {
-        res.status(400).json({ message: err.message })
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        res.status(400).json({ message });
     }
 });
 
-app.get('/api/users', async (req, res) => {
+app.get('/api/users', async (req: Request, res: Response) => {
     try {
         const users = await User.find();
         res.json(users);
-    } catch (err) {
-        res.status(400).json({ message: err.message })
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        res.status(400).json({ message });
     }
 });
 
@@ -44,8 +49,8 @@ connect(mongoUri)
     .then(() => {
         console.log('Connected to database');
     })
-    .catch(() => {
-        console.log('error');
+    .catch((err: unknown) => {
+        console.error('Database connection error:', err);
     });
 
 app.listen(3000, () => {
