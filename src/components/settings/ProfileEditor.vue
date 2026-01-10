@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onBeforeMount } from 'vue';
 import ProfilePicEditor from './ProfilePicEditor.vue';
+import type { User } from '@/types/models';
 
 const name = ref<string>('');
 const bio = ref<string>('');
@@ -18,6 +19,7 @@ function addChip() {
   const trimmedInput = chipInput.value.trim();
   if (trimmedInput && !chips.value.includes(trimmedInput)) {
     chips.value.push(trimmedInput);
+    // Keep form data in sync with the chip UI.
     interests.value = [...chips.value];
   }
   chipInput.value = '';
@@ -31,13 +33,15 @@ function removeChip(index: number) {
 onBeforeMount(async () => {
     try {
         const response = await fetch('http://localhost:3000/api/users');
-        const data = await response.json();
+        const data = await response.json() as User[];
         const user = data[0];
 
-        name.value = user.name;
-        bio.value = user.bio || '';
-        interests.value = Array.isArray(user.interests) ? user.interests : [];
-        chips.value = [...interests.value];
+        name.value = user?.name ?? '';
+        bio.value = user?.bio || '';
+        // Normalize server data so the chip UI always works with arrays.
+        const normalizedInterests = Array.isArray(user?.interests) ? user.interests : [];
+        interests.value = normalizedInterests;
+        chips.value = [...normalizedInterests];
     } catch (err) {
         console.log('Error when fetching user data:', err);
     }
