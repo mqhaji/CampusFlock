@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, type LocationQueryValue } from 'vue-router';
 import { useDisplay, useTheme } from 'vuetify';
 import CreateEvent from './components/CreateEvent.vue';
 
@@ -97,21 +97,21 @@ const display = useDisplay();
 const theme = useTheme();
 
 const drawer = ref(false);
-const activeTab = ref(route.path);
-const searchQuery = ref('');  // Store the search query input
-let searchTimer;
-let systemThemeMedia;
+const activeTab = ref<string>(route.path);
+const searchQuery = ref<string>('');  // Store the search query input
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+let systemThemeMedia: MediaQueryList | null = null;
 
 watch(() => route.path, (newPath) => {
   activeTab.value = newPath;
 });
 const createEventDialog = ref(false)
 
-function applySystemTheme(isDark) {
+function applySystemTheme(isDark: boolean) {
   theme.global.name.value = isDark ? 'dark' : 'light';
 }
 
-function handleSystemThemeChange(event) {
+function handleSystemThemeChange(event: MediaQueryListEvent) {
   applySystemTheme(event.matches);
 }
 
@@ -142,18 +142,18 @@ onBeforeUnmount(() => {
   }
 });
 
-function navigateTo(route) {
+function navigateTo(targetRoute: string) {
   // Check if the new route is different from the current one
-  if (route !== router.currentRoute.value.path) {
-    router.push(route);
-    activeTab.value = route; // Only update if the route changes
+  if (targetRoute !== router.currentRoute.value.path) {
+    router.push(targetRoute);
+    activeTab.value = targetRoute; // Only update if the route changes
     if (display.mobile) {
       drawer.value = false; // Close the drawer on mobile after navigation
     }
   }
 }
 
-function updateSearchRoute(value, replace = false) {
+function updateSearchRoute(value: string, replace: boolean = false) {
   const trimmed = value.trim();
   if (!trimmed) {
     if (route.path !== '/home') {
@@ -178,7 +178,7 @@ function updateSearchRoute(value, replace = false) {
   }
 }
 
-watch(searchQuery, (value) => {
+watch(searchQuery, (value: string) => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
     updateSearchRoute(value, true);
@@ -187,7 +187,7 @@ watch(searchQuery, (value) => {
 
 watch(
   () => route.query.query,
-  (value) => {
+  (value: LocationQueryValue | LocationQueryValue[] | undefined) => {
     const nextValue = typeof value === 'string' ? value : '';
     if (nextValue !== searchQuery.value) {
       searchQuery.value = nextValue;
