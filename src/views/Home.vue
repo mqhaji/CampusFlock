@@ -2,12 +2,7 @@
   <v-container>
     <h1 class="mb-2">Upcoming Events</h1>
     <v-row>
-      <EventCard
-        v-for="event in sortedEvents"
-        :key="event._id"
-        :event="event"
-        @open="openDialog"
-      />
+      <EventCard v-for="event in sortedEvents" :key="event._id" :event="event" @open="openDialog" />
     </v-row>
 
     <!-- Dialog for Event Details -->
@@ -43,6 +38,7 @@ const sortedEvents = ref<Event[]>([]);
 const dialog = ref(false);
 const currentEvent = ref<Event | null>(null);
 
+// Format event date/time for cards and dialogs.
 function formatDate(isoString: string | Date | undefined, options: { dateOnly?: boolean } = {}) {
   if (!isoString) {
     return '';
@@ -61,10 +57,12 @@ function getOrganizerName(organizer?: Event['organizer'], fallback?: string) {
   return fallback || 'Unknown Organizer';
 }
 
+// Normalize date inputs before sorting.
 function toDate(value: string | Date | undefined) {
   return value instanceof Date ? value : new Date(value ?? '');
 }
 
+// Open the event details dialog with extra display fields.
 function openDialog(event: Event) {
   currentEvent.value = {
     ...event,
@@ -79,6 +77,7 @@ function closeDialog() {
 
 onMounted(async () => {
   try {
+    // Load events once on page mount.
     const data = await fetchEvents();
     sortedEvents.value = data
       .map(event => ({

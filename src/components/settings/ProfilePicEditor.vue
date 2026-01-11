@@ -4,6 +4,7 @@ import { ref } from 'vue';
 const show = defineModel<boolean>()
 const profilePic = ref<File | null>(null)
 
+// Submit the chosen file (hook up the API later).
 function onSubmit() {
     if (profilePic) {
         // TODO submit to database
@@ -11,6 +12,7 @@ function onSubmit() {
     show.value = false
 }
 
+// Close without saving changes.
 function onCancel() {
     // close dialog and don't submit
     show.value = false

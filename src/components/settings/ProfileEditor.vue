@@ -12,33 +12,34 @@ const profilePicDialog = ref<boolean>(false);
 const chipInput = ref<string>('')
 const chips = ref<string[]>([]);
 
+// Open the profile picture modal.
 function onClickProfilePic() {
     profilePicDialog.value = true;
 }
 
 function addChip() {
-  const trimmedInput = chipInput.value.trim();
-  if (trimmedInput && !chips.value.includes(trimmedInput)) {
-    chips.value.push(trimmedInput);
-    // Keep form data in sync with the chip UI.
-    interests.value = [...chips.value];
-  }
-  chipInput.value = '';
+    const trimmedInput = chipInput.value.trim();
+    if (trimmedInput && !chips.value.includes(trimmedInput)) {
+        chips.value.push(trimmedInput);
+        interests.value = [...chips.value];
+    }
+    chipInput.value = '';
 }
 
+// Keep the underlying interests array in sync with chip UI.
 function removeChip(index: number) {
-  chips.value.splice(index, 1);
-  interests.value = [...chips.value];
+    chips.value.splice(index, 1);
+    interests.value = [...chips.value];
 };
 
 onBeforeMount(async () => {
     try {
+        // Load the current user to populate the form fields.
         const data = await fetchUsers();
         const user = data[0];
 
         name.value = user?.name ?? '';
         bio.value = user?.bio || '';
-        // Normalize server data so the chip UI always works with arrays.
         const normalizedInterests = Array.isArray(user?.interests) ? user.interests : [];
         interests.value = normalizedInterests;
         chips.value = [...normalizedInterests];

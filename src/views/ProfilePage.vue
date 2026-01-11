@@ -11,6 +11,7 @@ const user = ref<User | null>(null);
 
 onBeforeMount(async () => {
     try {
+        // Load a single user for the profile view (auth comes later).
         const data = await fetchUsers();
         // Temporary: use the first user until auth is implemented.
         user.value = data[0] ?? null;

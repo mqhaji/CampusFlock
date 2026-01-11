@@ -2,12 +2,7 @@
   <v-container>
     <h1 class="mb-2">Search Results for "{{ $route.query.query }}"</h1>
     <v-row>
-      <EventCard
-        v-for="event in filteredEvents"
-        :key="event._id"
-        :event="event"
-        @open="openDialog"
-      />
+      <EventCard v-for="event in filteredEvents" :key="event._id" :event="event" @open="openDialog" />
     </v-row>
 
     <!-- Dialog for Event Details -->
@@ -45,6 +40,7 @@ const dialog = ref(false);
 const currentEvent = ref<Event | null>(null);
 const events = ref<Event[]>([]);
 
+// Filter events based on the query string in the URL.
 const filteredEvents = computed(() => {
   const searchQuery = String(route.query.query || '').toLowerCase();
   if (!searchQuery) {
@@ -77,6 +73,7 @@ function getOrganizerName(organizer?: Event['organizer'], fallback?: string) {
   return fallback || 'Unknown Organizer';
 }
 
+// Open the event details dialog with extra display fields.
 function openDialog(event: Event) {
   currentEvent.value = {
     ...event,
@@ -91,6 +88,7 @@ function closeDialog() {
 
 onMounted(async () => {
   try {
+    // Load events once on page mount.
     const data = await fetchEvents();
     events.value = data.map(event => ({
       ...event,

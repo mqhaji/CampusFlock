@@ -1,3 +1,4 @@
+// Shared model types used across the frontend.
 export type Id = string;
 
 export interface Metadata {

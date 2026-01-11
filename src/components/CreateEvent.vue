@@ -7,6 +7,7 @@ const eventTitle = ref("");
 const dateString = ref<string>("");
 const eventPic = ref<File | null>(null);
 
+// Keep date input and date picker in sync.
 const date = computed<Date | null>({
     get: (): Date | null => {
         return validateDateInput(dateString.value) ? new Date(dateString.value) : null;
@@ -16,6 +17,7 @@ const date = computed<Date | null>({
     }
 })
 
+// Format a Date object for the text input.
 function formatDate(date: Date): string {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -29,6 +31,7 @@ function validateDateInput(input: string): boolean {
 }
 
 watch(dateString, (newVal) => {
+    // Clear invalid manual input so the picker stays consistent.
     if (!validateDateInput(newVal)) {
         dateString.value = "";
     }
