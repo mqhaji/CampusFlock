@@ -1,19 +1,16 @@
 {
-  // TypeScript config for the server. This does not change runtime behavior yet.
   "compilerOptions": {
-    // Modern Node target and ESM modules (matches current server setup).
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    // Keep build output consistent when we later compile TS to dist/.
     "rootDir": "src",
     "outDir": "dist",
-    // Tighter checks help catch mistakes early.
     "noImplicitAny": true,
-    // Helpful defaults for newcomers (strict can be enabled later).
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts"
+  ]
 }

@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type InferSchemaType, type Model } from 'mongoose';
 
+// User schema for profile and preference data.
 const UserSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },

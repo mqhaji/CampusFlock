@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type InferSchemaType, type Model } from 'mongoose';
 
+// Event schema for persisted event listings.
 const EventSchema = new Schema(
     {
         title: { type: String, required: true, trim: true },

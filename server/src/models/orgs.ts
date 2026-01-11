@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type InferSchemaType, type Model } from 'mongoose';
 
+// Organizer schema for student groups and departments.
 const OrganizerSchema = new Schema(
     {
         name: { type: String, required: true, trim: true },
