@@ -1,11 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer
-      v-if="!display.mobile"
-      v-model="drawer"
-      permanent
-      app
-    >
+    <v-navigation-drawer v-if="!display.mobile" v-model="drawer" permanent app>
       <v-list>
         <v-list-item @click="navigateTo('/home')" link>
           <v-icon>mdi-home</v-icon>
@@ -19,12 +14,7 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-bottom-navigation
-      v-else
-      app
-      grow
-      v-model="activeTab"
-    >
+    <v-bottom-navigation v-else app grow v-model="activeTab">
       <v-btn @click="navigateTo('/home')" value="/home">
         <span>Home</span>
         <v-icon>mdi-home</v-icon>
@@ -39,29 +29,17 @@
       <v-row class="d-flex align-center">
 
         <v-col cols="4">
-          <v-toolbar-title class="ma-4" @click="navigateTo('/home')"style="cursor:pointer;">CampusFlock</v-toolbar-title>
+          <v-toolbar-title class="ma-4" @click="navigateTo('/home')"
+            style="cursor:pointer;">CampusFlock</v-toolbar-title>
         </v-col>
 
         <v-col cols="4" class="d-flex justify-center">
-          <v-text-field dense flat hide-details solo-inverted placeholder="Search..."
-            v-model="searchQuery" @keyup.enter="handleSearch"
-            class="search-bar d-flex-inline justify-self-center">
+          <v-text-field dense flat hide-details solo-inverted placeholder="Search..." v-model="searchQuery"
+            @keyup.enter="handleSearch" class="search-bar d-flex-inline justify-self-center">
             <template #append-inner>
-              <v-btn
-                icon="mdi-magnify"
-                variant="text"
-                size="small"
-                aria-label="Search"
-                @click="handleSearch"
-              />
-              <v-btn
-                v-if="searchQuery"
-                icon="mdi-close"
-                variant="text"
-                size="small"
-                aria-label="Clear search"
-                @click="clearSearch"
-              />
+              <v-btn icon="mdi-magnify" variant="text" size="small" aria-label="Search" @click="handleSearch" />
+              <v-btn v-if="searchQuery" icon="mdi-close" variant="text" size="small" aria-label="Clear search"
+                @click="clearSearch" />
             </template>
           </v-text-field>
         </v-col>
@@ -102,11 +80,13 @@ const searchQuery = ref<string>('');  // Store the search query input
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 let systemThemeMedia: MediaQueryList | null = null;
 
+// Keep the active tab in sync with the current route.
 watch(() => route.path, (newPath) => {
   activeTab.value = newPath;
 });
 const createEventDialog = ref(false)
 
+// Set the Vuetify theme based on OS preference.
 function applySystemTheme(isDark: boolean) {
   theme.global.name.value = isDark ? 'dark' : 'light';
 }
@@ -120,14 +100,11 @@ onMounted(() => {
     return;
   }
 
+  // Start listening for OS theme changes.
   systemThemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
   applySystemTheme(systemThemeMedia.matches);
 
-  if (systemThemeMedia.addEventListener) {
-    systemThemeMedia.addEventListener('change', handleSystemThemeChange);
-  } else if (systemThemeMedia.addListener) {
-    systemThemeMedia.addListener(handleSystemThemeChange);
-  }
+  systemThemeMedia.addEventListener('change', handleSystemThemeChange);
 });
 
 onBeforeUnmount(() => {
@@ -135,15 +112,11 @@ onBeforeUnmount(() => {
     return;
   }
 
-  if (systemThemeMedia.removeEventListener) {
-    systemThemeMedia.removeEventListener('change', handleSystemThemeChange);
-  } else if (systemThemeMedia.removeListener) {
-    systemThemeMedia.removeListener(handleSystemThemeChange);
-  }
+  systemThemeMedia.removeEventListener('change', handleSystemThemeChange);
 });
 
 function navigateTo(targetRoute: string) {
-  // Check if the new route is different from the current one
+  // Route change handler for drawer/bottom nav buttons.
   if (targetRoute !== router.currentRoute.value.path) {
     router.push(targetRoute);
     activeTab.value = targetRoute; // Only update if the route changes
@@ -154,6 +127,7 @@ function navigateTo(targetRoute: string) {
 }
 
 function updateSearchRoute(value: string, replace: boolean = false) {
+  // Convert search input into a route + query string.
   const trimmed = value.trim();
   if (!trimmed) {
     if (route.path !== '/home') {
@@ -179,6 +153,7 @@ function updateSearchRoute(value: string, replace: boolean = false) {
 }
 
 watch(searchQuery, (value: string) => {
+  // Debounce search updates while typing.
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
     updateSearchRoute(value, true);
@@ -195,10 +170,12 @@ watch(
   }
 );
 
+// Trigger a search immediately (e.g., Enter key or icon click).
 function handleSearch() {
   updateSearchRoute(searchQuery.value);
 }
 
+// Clear the input and return to the home feed.
 function clearSearch() {
   searchQuery.value = '';
   updateSearchRoute('');

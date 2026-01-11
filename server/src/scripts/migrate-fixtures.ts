@@ -8,10 +8,12 @@ import Event from '../models/events.js';
 import Organizer from '../models/orgs.js';
 import User from '../models/users.js';
 
+// Resolve the fixtures folder from this script location.
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const dataDir = path.resolve(__dirname, '..', 'data');
 
+// Mongo connection and CLI options.
 const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campusflock';
 const shouldDrop = process.argv.includes('--drop');
 
@@ -57,22 +59,27 @@ function splitInterests(value?: string): string[] {
 }
 
 async function migrate() {
+  // Connect before any reads/writes.
   await connect(mongoUri);
 
   if (shouldDrop) {
+    // Optional clean slate when reseeding.
     await Event.deleteMany({});
     await Organizer.deleteMany({});
     await User.deleteMany({});
   }
 
+  // Load fixture data in parallel.
   const [eventsData, orgsData, usersData] = await Promise.all([
     readJson<EventFixture[]>('events.json'),
     readJson<OrganizerFixture[]>('orgs.json'),
     readJson<UserFixture[]>('users.json'),
   ]);
 
+  // Map legacy organizer IDs to new ObjectIds for event linking.
   const organizerIdByLegacyUserId = new Map<string, Types.ObjectId>();
 
+  // Upsert organizers first so events can reference them.
   for (const org of orgsData) {
     const organizerData = {
       name: org.name,
@@ -92,6 +99,7 @@ async function migrate() {
     }
   }
 
+  // Upsert users.
   for (const user of usersData) {
     const userData = {
       name: user.name,
@@ -108,6 +116,7 @@ async function migrate() {
     );
   }
 
+  // Upsert events and link to organizer ObjectIds.
   for (const event of eventsData) {
     const organizerId = organizerIdByLegacyUserId.get(event.userId);
 

@@ -1,5 +1,4 @@
 import express from 'express';
-// Explicit Request/Response types make handler signatures clearer for beginners.
 import type { Request, Response } from 'express';
 import { connect } from 'mongoose';
 import cors from 'cors';
@@ -8,11 +7,13 @@ import Event from './models/events.js';
 import Organizer from './models/orgs.js';
 import User from './models/users.js';
 
+// Express app setup and common middleware.
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// Events API.
 app.get('/api/events', async (req: Request, res: Response) => {
     try {
         const events = await Event.find().populate('organizer', 'name email profilePicUrl');
@@ -23,6 +24,7 @@ app.get('/api/events', async (req: Request, res: Response) => {
     }
 });
 
+// Organizers API.
 app.get('/api/orgs', async (req: Request, res: Response) => {
     try {
         const orgs = await Organizer.find();
@@ -33,6 +35,7 @@ app.get('/api/orgs', async (req: Request, res: Response) => {
     }
 });
 
+// Users API.
 app.get('/api/users', async (req: Request, res: Response) => {
     try {
         const users = await User.find();
@@ -43,6 +46,7 @@ app.get('/api/users', async (req: Request, res: Response) => {
     }
 });
 
+// MongoDB connection (local by default).
 const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campusflock';
 
 connect(mongoUri)
@@ -53,6 +57,7 @@ connect(mongoUri)
         console.error('Database connection error:', err);
     });
 
+// Start the HTTP server.
 app.listen(3000, () => {
     console.log(`Server running on port ${3000}`);
 });
